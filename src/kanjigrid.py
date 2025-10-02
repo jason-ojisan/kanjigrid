@@ -29,11 +29,14 @@ from . import config_util, data, generate_grid, save, util, webview_util
 
 
 class KanjiGrid:
-    def __init__(self, mw: main.AnkiQt) -> None:
-        if mw:
-            self.menuAction = QAction("Generate Kanji Grid", mw, triggered=self.setup)
-            mw.form.menuTools.addSeparator()
-            mw.form.menuTools.addAction(self.menuAction)
+    def __init__(self, cfg: config_util.KanjiGridConfigProxy) -> None:
+        if not mw:
+            raise RuntimeError("mw is None")
+        print("STARTING KANJI GRID")
+        self.menuAction = QAction("Generate Kanji Grid", mw, triggered=self.setup)
+        mw.form.menuTools.addSeparator()
+        mw.form.menuTools.addAction(self.menuAction)
+        self.cfg = cfg
 
     def link_handler(self, link: str, config: types.SimpleNamespace, deckname: str) -> None:
         link_prefix = link[:2]
@@ -92,7 +95,7 @@ class KanjiGrid:
             self.displaygrid(config, util.get_deck_name(mw, config), units)
 
     def setup(self) -> None:
-        config = types.SimpleNamespace(**config_util.get_config(mw))
+        config = types.SimpleNamespace(**self.cfg.get_config())
         config.did = mw.col.conf["curDeck"]
         def change_did(deckname: str) -> None:
             if deckname == "*":
@@ -346,7 +349,7 @@ class KanjiGrid:
         data_tab_vertical_layout.addLayout(save_reset_buttons_horizontal_layout)
 
         def save_settings(config: types.SimpleNamespace) -> None:
-            config_util.set_config(mw, set_config_attributes(config))
+            self.cfg.set_config(set_config_attributes(config))
 
         save_settings_button = QPushButton("Save Settings", clicked = lambda _: save_settings(config))
         save_reset_buttons_horizontal_layout.addWidget(save_settings_button)
@@ -354,7 +357,7 @@ class KanjiGrid:
         def reset_settings(setup_win: QDialog) -> None:
             reply = QMessageBox.question(setup_win, "Reset Settings", "Confirm reset settings")
             if reply == QMessageBox.StandardButton.Yes:
-                config_util.reset_config(mw)
+                self.cfg.reset_config()
                 setup_win.reject()
 
         reset_settings_button = QPushButton("Reset Settings", clicked = lambda _: reset_settings(setup_win))
