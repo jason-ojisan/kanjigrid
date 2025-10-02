@@ -13,9 +13,15 @@ if __name__ != "__main__" and "pytest" not in sys.modules and is_running_as_addo
     from aqt import mw
 
     from . import kanjigrid
+    from .config_util import KanjiGridConfigProxy
+    from aqt.qt import QAction
+
     # Save a reference to the toolkit onto the mw, preventing garbage collection of PyQt objects
     if mw:
-        mw.kanjigrid = kanjigrid.KanjiGrid(mw)
+        gen_grid_action = QAction("Generate Kanji Grid", mw)
+        mw.kanjigrid = kanjigrid.KanjiGrid(cfg=KanjiGridConfigProxy(mw), menu_action=gen_grid_action)
+        mw.form.menuTools.addSeparator()
+        mw.form.menuTools.addAction(gen_grid_action)
 else:
     print("This is an addon for the Anki spaced repetition learning system and cannot be run directly.")  # noqa: T201
     print("Please download Anki from <https://apps.ankiweb.net/>")  # noqa: T201

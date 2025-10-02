@@ -29,14 +29,12 @@ from . import config_util, data, generate_grid, save, util, webview_util
 
 
 class KanjiGrid:
-    def __init__(self, cfg: config_util.KanjiGridConfigProxy) -> None:
+    def __init__(self, cfg: config_util.KanjiGridConfigProxy, menu_action: QAction) -> None:
         if not mw:
             raise RuntimeError("mw is None")
         print("STARTING KANJI GRID")
-        self.menuAction = QAction("Generate Kanji Grid", mw, triggered=self.setup)
-        mw.form.menuTools.addSeparator()
-        mw.form.menuTools.addAction(self.menuAction)
         self.cfg = cfg
+        qconnect(menu_action.triggered, self.setup)
 
     def link_handler(self, link: str, config: types.SimpleNamespace, deckname: str) -> None:
         link_prefix = link[:2]
